@@ -35,12 +35,15 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-const val REQUEST_CODE_STORAGE_PERMISSION = 1
-const val REQUEST_CODE_SELECT_IMAGE = 2
-private const val TAG = "NoteDetailsFragment"
 
 @AndroidEntryPoint
 class NoteDetailsFragment : Fragment() {
+
+    companion object {
+        const val REQUEST_CODE_STORAGE_PERMISSION = 1
+        const val REQUEST_CODE_SELECT_IMAGE = 2
+        private const val TAG = "NoteDetailsFragment"
+    }
 
     private lateinit var binding: FragmentNoteDetailsBinding
     private val noteViewModel by activityViewModels<NoteViewModel>()
@@ -145,18 +148,19 @@ class NoteDetailsFragment : Fragment() {
                 visibility = View.VISIBLE
                 setOnClickListener {
 
-                    val deleteNoteLayoutBinding
-                    = DeleteNoteLayoutBinding.inflate(layoutInflater)
+                    val deleteNoteLayoutBinding = DeleteNoteLayoutBinding.inflate(layoutInflater)
 
                     val dialog = MaterialAlertDialogBuilder(requireContext())
                         .setView(deleteNoteLayoutBinding.root)
                         .setPositiveButton(
-                            "DELETE NOTE") { dialog, _ ->
+                            "DELETE NOTE"
+                        ) { dialog, _ ->
                             noteViewModel.deleteNote(args.note!!)
                             dialog.dismiss()
                             findNavController().navigate(NoteFragmentDirections.actionNoteFragmentToSaveOrDeleteFragment())
                         }
-                        .setNegativeButton("CANCEL"
+                        .setNegativeButton(
+                            "CANCEL"
                         ) { dialog, _ -> dialog?.cancel() }
                         .setCancelable(true)
                         .create()
@@ -201,9 +205,11 @@ class NoteDetailsFragment : Fragment() {
                     selectImage()
 
                 } else {
-                    // Permission is denied
-                    // Handle the denied state, show a message, or request the permission again
-                    Toast.makeText(requireContext(), "Permission Denied", Toast.LENGTH_SHORT).show()
+
+                    if (shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        // Permission rationale should be shown
+                        showPermissionRationaleDialog()
+                    }
 
 
                 }
@@ -386,14 +392,11 @@ class NoteDetailsFragment : Fragment() {
 //                        REQUEST_CODE_STORAGE_PERMISSION
 //                    )
 
-                    if (shouldShowRequestPermissionRationale(android.Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                        // Permission rationale should be shown
-                        showPermissionRationaleDialog()
-                    } else {
-                        // No need to show permission rationale, request the permission directly
-                        requestPermissionLauncher.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
 
-                    }
+                    // No need to show permission rationale, request the permission directly
+                    requestPermissionLauncher.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+
+
                 } else {
                     selectImage()
                 }
